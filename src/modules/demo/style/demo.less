@@ -1,37 +1,30 @@
-.demo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  color: red;
-  transition: all 0.3s ease-in-out;
-
-  .content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    .title {
-      font-family: 'MyFont';
-    }
-  }
-
-  img {
-    height: 400px;
-  }
-
-  .cover {
-    width: 400px;
-    height: 200px;
-    background-image: url('../assets/good.png');
-  }
-}
-
 :global {
-  .chenjiajing {
+  .infinite-list-container {
+    position: relative;
+    width: 40vw;
+    height: 80vh;
+    margin: auto;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
     background-color: #ccc;
+  }
+
+  .infinite-list-phantom {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: -1;
+  }
+
+  .infinite-list {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+  }
+
+  .infinite-list-item {
+    border-bottom: 1px solid #999;
   }
 }

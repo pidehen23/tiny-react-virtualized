@@ -1,103 +1,86 @@
-import React, { PropsWithChildren, useState, useEffect, memo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Button } from 'antd';
-import classnames from 'classnames';
-import { useParams } from 'react-router-dom';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import '../style/demo.less';
-import demeImage from '../assets/good.png';
-import { decrementCount, incrementCount } from '@/store/demo/action';
-import { IDemoState } from '@/store/demo/type';
-import { RouteComponentProps } from 'react-router-dom';
-import { IStoreState } from '@/store/type';
 
-interface IProps {
-  [key: string]: any;
-}
+const Demo1 = () => {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [startIndex, setStartIndex] = useState(0); //  开始索引
+  const [endIndex, setEndIndex] = useState(0); // 结束索引
+  const [screenHeight, setScreenHeight] = useState(0); // 可视区域高度
+  const [itemSize] = useState(60); // 每项高度
+  const [listData, setListData] = useState<any[]>([]); // 所有列表数组
+  const [startOffset, setStartOffset] = useState(0); // 偏移量
 
-const Demo1 = (props: PropsWithChildren<IProps & RouteComponentProps>) => {
-  const {} = props;
-  const { language } = useParams<RouterParams>();
-  const [isShow, setShow] = useState(false);
-  const dispatch = useDispatch();
-  const demo = useSelector<IStoreState, IDemoState>(state => state.demo);
+  /**
+   * @desc 计算属性
+   */
+  // 总高度
+  const listHeight = useMemo(() => listData.length * itemSize, [itemSize, listData.length]);
 
-  // 获取详情
+  // 真实显示的列表数据
+  const visibleData = useMemo(
+    () => listData.slice(startIndex, Math.min(endIndex, listData.length)),
+    [endIndex, listData, startIndex]
+  );
+
+  // 可显示的列表项数
+  const visibleCount = useMemo(() => Math.ceil(screenHeight / itemSize), [itemSize, screenHeight]);
+
   useEffect(() => {
-    const getUserInfo = () => {
-      void window.apis
-        .getUserInfo<{ name: string }>({
-          params: { id: 110 },
-          rest: { id: 1 }
-        })
-        .then(res => {
-          console.log('success:', res);
-        })
-        .catch(err => {
-          console.log('error:', err);
-        });
-    };
-    void getUserInfo();
-  }, []);
+    // 初始化假数据
+    setListData(
+      Array(20000)
+        .fill(0)
+        .map((_, i) => ({ id: i, value: `第${i + 1}条数据内容` }))
+    );
 
-  // 获取详情
-  useEffect(() => {
-    const postFriendList = () => {
-      void window.apis
-        .postFriendList<{ name: string }>({
-          data: { token: 110 }
-        })
-        .then(res => {
-          console.log('success:', res);
-        })
-        .catch(err => {
-          console.log('error:', err);
-        });
-    };
-    void postFriendList();
-  }, []);
+    const dom = contentRef.current;
 
-  const increment = () => {
-    dispatch(incrementCount(1));
-    setShow(!isShow);
-  };
+    if (dom) {
+      setTimeout(() => {
+        setScreenHeight(dom.clientHeight);
+        setStartIndex(0);
+        setEndIndex(0 + Math.ceil(dom.clientHeight / itemSize));
+      }, 0);
+    }
+  }, [itemSize]);
 
-  const decrement = () => {
-    dispatch(decrementCount(-1));
-    setShow(!isShow);
-  };
-  if (demo.count === 6) {
-    throw new Error('测试错误遮罩层！');
-  }
-
-  const onNextPage = () => {
-    window.router.push({
-      pathname: `/${language}/demo-2`,
-      state: { name: window.router.location.pathname }
-    });
-  };
+  const onScroll = useCallback(() => {
+    const container = contentRef.current;
+    if (container) {
+      // 当前滚动位置
+      const scrollTop = container.scrollTop;
+      // 开始索引
+      const start = Math.floor(scrollTop / itemSize);
+      const end = start + visibleCount;
+      setStartIndex(start);
+      setEndIndex(end);
+      // 更新偏移量
+      setStartOffset(scrollTop - (scrollTop % itemSize));
+    }
+  }, [itemSize, visibleCount]);
 
   return (
-    <div styleName="demo" className={classnames({ chenjiajing: isShow })}>
-      <div styleName="content">
-        <h1>{demo.count}</h1>
-        <p styleName="title">无敌是多么寂寞-888888</p>
-        <Button type="primary" onClick={increment}>
-          +
-        </Button>
-        &nbsp; &nbsp; &nbsp;
-        <Button type="primary" onClick={decrement}>
-          -
-        </Button>
+    <div ref={contentRef} className="infinite-list-container" onScroll={onScroll}>
+      {/* 容器的占位div，高度为总列表高度，用于生成滚动条 */}
+      <div className="infinite-list-phantom" style={{ height: `${listHeight}px` }} />
+      {/* 可视列表，实际渲染列表  */}
+
+      <div className="infinite-list" style={{ transform: `translate3d(0, ${startOffset}px, 0)` }}>
+        {visibleData.map(item => (
+          <div
+            key={item.id}
+            className="infinite-list-item"
+            style={{ height: `${itemSize}px`, lineHeight: `${itemSize}px`, textAlign: 'center' }}
+          >
+            {item.value}
+          </div>
+        ))}
       </div>
-      <img src={demeImage} alt="" />
-      <div styleName="cover" />
-      <hr />
-      <Button type="primary" onClick={onNextPage}>
-        到 DEMO-2
-      </Button>
     </div>
   );
 };
 
 export default memo(Demo1);
+
+// https://ufresh2013.github.io/2020/04/26/%E8%99%9A%E6%8B%9F%E5%88%97%E8%A1%A8/
