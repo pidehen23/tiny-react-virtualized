@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { createBrowserHistory } from 'history';
+import { createHashHistory } from 'history';
 
 import '@/config/i18n';
 import apis from '../library/apis';
 
 window.apis = apis as unknown as IAPIs;
-window.router = createBrowserHistory();
+window.router = createHashHistory();
 
 import App from './app';
 

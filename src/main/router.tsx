@@ -1,5 +1,5 @@
 import React, { useEffect, PropsWithChildren } from 'react';
-import { Router, Redirect, Route, Switch, withRouter, RouteComponentProps } from 'react-router-dom';
+import { HashRouter as Router, Redirect, Route, Switch, withRouter, RouteComponentProps } from 'react-router-dom';
 
 import PageLoading from '@/components/page-loading';
 import { ILangState, ILangType } from '@/store/lang/type';
@@ -89,7 +89,7 @@ const SwitchRouterComponent = (props: PropsWithChildren<RouteComponentProps>) =>
 const WithRouterComponent = withRouter(SwitchRouterComponent);
 
 const RouterComponent = () => (
-  <Router history={window.router}>
+  <Router>
     <WithRouterComponent />
   </Router>
 );
