@@ -1,0 +1,9 @@
+node_modules/
+server/node_modules/
+dist/
+.idea/
+.cache/
+# .vscode/
+.DS_Store
+*/.DS_Store
+stats.json
